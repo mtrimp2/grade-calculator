@@ -4,7 +4,7 @@ import copy
 
 # Importing application internal classes
 from grades import Grades
-from grade_weights import GradeWeights
+from grade_weights import GradeWeights\
 
 class GradeCalculator:
     """
@@ -29,7 +29,7 @@ class GradeCalculator:
             course_grade = quizzes_part + midterm_part + project_part + final_part
             return course_grade
         
-        
+
     @staticmethod
     def calculate_optimistic_course_percentage(grades:Grades, weights:GradeWeights) -> float:
         """
@@ -57,7 +57,50 @@ class GradeCalculator:
         # Let the basic calculation function take care of actually
         # calculating the percentage grade
         return GradeCalculator.calculate_course_percentage(optimistic_grades, weights)
-        
+    
+    @staticmethod
+    def calculate_minimum_scores(grades:Grades, weights:GradeWeights) -> float:
+        """
+        Calculates the minimum average points for all yet ungraded
+        assignments to still get an A in class.
+        """
+
+        # Need to create a copy so that we don't overwrite
+        # the values of the Grades object that was passed in
+        my_grades:Grades = copy.copy(grades)
+
+        ungraded_weights = []
+        current_grade = 0
+
+        #find which are missing, add them to array if they are
+        if my_grades.quiz_1 is None:
+            ungraded_weights.append(weights.quizzes / 2)
+        else:
+            current_grade += my_grades.quiz_1 * (weights.quizzes / 2)
+        if my_grades.quiz_2 is None:
+            ungraded_weights.append(weights.quizzes / 2)
+        else:
+            current_grade += my_grades.quiz_2 * (weights.quizzes / 2)
+        if my_grades.midterm is None:
+            ungraded_weights.append(weights.midterm)
+        else:
+            current_grade += my_grades.midterm * weights.midterm
+        if my_grades.project is None:
+            ungraded_weights.append(weights.project)
+        else:
+            current_grade += my_grades.project * weights.project
+        if my_grades.final is None:
+            ungraded_weights.append(weights.final)
+        else:
+            current_grade += my_grades.final * weights.final
+
+        percentage = 0
+        for grade in ungraded_weights:
+            percentage += grade
+
+        needed_percentage = (.91 - current_grade) / percentage
+        return needed_percentage
+
     @staticmethod
     def calculate_letter_grade(percentage_grade:float) -> str:
         """
